@@ -1,0 +1,23 @@
+{
+  "name": "point72-hackathon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "express": "^4.19.2",
+    "gtfs-realtime-bindings": "^1.1.1",
+    "moment": "^2.30.1",
+    "mta-gtfs": "^1.1.0",
+    "node-fetch": "^3.3.2",
+    "protobufjs": "^7.2.6",
+    "socket.io": "^4.7.5",
+    "ws": "^8.16.0"
+  }
+}

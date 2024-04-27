@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Point72 Hackathon 2024 Project</title>
+  <style>
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .notification {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #E7E4E0;
+      color: #000000;
+      padding: 20px;
+      text-align: center;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-bottom: 2px solid #E7E4E0;
+      font-size: 16px;
+      font-family: 'Roboto', sans-serif; /* Specify Roboto font */
+    }
+
+    @media (max-width: 1600px) {
+      .notification {
+        padding: 50px;
+        font-size: 56px;
+      }
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+  </style>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoidXNtb25pIiwiYSI6ImNsdmkza2dsNjFjc3cybXFmbDF4eDZ6Y2EifQ.6Rr_GaLK1jLG5gJa0yqXtQ';
+
+    let map;
+    let marker;
+    let htmlData;
+    const socket = io();
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    socket.on('connect', () => {
+      console.log('Connected to Socket.IO server');
+    });
+
+    socket.
+
+    socket.on('disconnect', () => {
+      console.log('Socket.IO connection closed');
+    });
+
+    function generateHTMLTable(data) {
+        let tableHTML = '<table style="width: 100%; border-collapse: collapse; border: 2px solid black;">\n';
+        tableHTML += '<tr style="background-color: #f2f2f2;"><th style="padding: 10px; border: 1px solid black;">Route</th><th style="padding: 10px; border: 1px solid black;">Uptown / Manhattan</th><th style="padding: 10px; border: 1px solid black;">Downtown / Brooklyn</th></tr>\n';
+
+        for (const route in data[0].closestTimes) {
+          const times = data[0].closestTimes[route];
+          const timesHTML = times.map(time => `<td style="padding: 10px; border: 1px solid black;">${time}</td>`).join('');
+
+          tableHTML += `<tr><td style="padding: 10px; border: 1px solid black;">${route}</td>${timesHTML}</tr>\n`;
+        }
+
+        tableHTML += '</table>';
+        console.log(tableHTML);
+        return tableHTML;
+      }
+
+
+    function initMap() {
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-73.935242, 40.730610], // Coordinates of New York in Mapbox format (lng, lat)
+        zoom: 12,
+      });
+
+      map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+      }))
+
+      // This event listener will call addMarker() when the map is clicked.
+      map.on('click', async (e) => {
+        socket.emit('message', { lat: e.lngLat.lat, lon: e.lngLat.lng });
+
+        console.log(`Latitude: ${e.lngLat.lat}, Longitude: ${e.lngLat.lng}`);
+
+        socket.on('showData', (message) => {
+          console.log(`Received message from server: ${message.cc}`);
+          showNotification(`Closest Station: ${message[0].name}`);
+
+          htmlData = generateHTMLTable(message);
+
+          console.log(message.stops)
+
+          addMarker(e.lngLat);
+        });
+      });
+    }
+
+    // Adds a marker to the map.
+    function addMarker(location) {
+      if (marker) {
+        marker.remove(); // Remove the existing marker if it exists
+      }
+      marker = new mapboxgl.Marker().setLngLat(location).addTo(map);
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(htmlData);
+      marker.setPopup(popup).togglePopup();
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+    }
+  </script>
+</head>
+
+<body onload="initMap()">
+  <div id="map"></div>
+  <div class="notification" id="notification"></div>
+</body>
+</html>
