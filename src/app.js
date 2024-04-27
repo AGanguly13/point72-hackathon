@@ -15,6 +15,7 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+// Get the distance from the coordinates, to Km.
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = deg2rad(lat2 - lat1);
@@ -28,6 +29,7 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return distance;
 }
 
+// Find's the closest staion from the click's lat and lon coordinates.
 function findClosestStation(lat, lon) {
   let closestStation = null;
   let minDistance = Infinity;
@@ -65,6 +67,7 @@ async function fetchDataByLocation(latitude, longitude) {
   }
 }
 
+// # Find the closest times from the MTA api
 function findClosestTime(data) {
   const stations = data.data;
   const result = [];
@@ -96,6 +99,7 @@ function findClosestTime(data) {
   return result;
 }
 
+// # Convert the UTC timestamp to relative time. (eg. 5 min ago etc...)
 function convertToRelativeTime(data) {
   const newData = JSON.parse(JSON.stringify(data)); // Clone the data to avoid modifying the original
   newData.forEach(station => {
@@ -125,7 +129,7 @@ io.on('connection', (socket) => {
     let d = findClosestTime(apiData);
     d = convertToRelativeTime(d);
 
-
+    // Send data back based on user click.
     socket.emit('showData', d);
   });
 
