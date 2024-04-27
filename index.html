@@ -65,45 +65,102 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDl4s4I8sWeEkSGow0qbpLyGaLNvigBkqU&callback=initMap&libraries=&v=weekly" async></script>
     <script>
         let map;
+        let infowindow; // Declare here but initialize inside initMap
+      
+        function initMap() {
+            const nyc = { lat: 40.730610, lng: -73.935242 };
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 12,
+                center: nyc,
+            });
+        
+            infowindow = new google.maps.InfoWindow(); // Initialize infowindow
+        
+            map.addListener("click", (e) => {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
+                fetch('http://127.0.0.1:5000/closest_station', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ lat: lat, lng: lng })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const content = `<div class="train-schedule">
+                                        <div>Closest Station: ${data.station_name}</div>
+                                        <div>Distance: ${data.distance_miles}</div>
+                                        <div>Walk Time: ${data.walk_time}</div>
+                                        <div>Run Time: ${data.run_time}</div>
+                                     </div>`;
+                    infowindow.setContent(content);
+                    infowindow.setPosition(e.latLng);
+                    infowindow.open(map);
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }                
 
         function sendLocationToServer(lat, lng) {
-            fetch('http://localhost:5000/receive_location', {
+            // Perform your server communication here
+            fetch('http://127.0.0.1:5000/closest_station', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({lat: lat, lng: lng})
+                body: JSON.stringify({ lat: lat, lng: lng })
             })
-            .then(response => response.json())
-            .then(data => console.log('Success:', data))
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }
-        let previousMarker = null;          
-        function initMap(){
-            const nyc = { lat: 40.730610, lng: -73.935242 };
-            const map = new google.maps.Map(document.getElementById("map"), {
-              zoom: 12,
-              center: nyc,
-            });
-
-            // This event listener will call addMarker() when the map is clicked.
-            map.addListener("click", (e) => {
-                if (previousMarker) {
-                    previousMarker.setMap(null); // Remove previous marker from map
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-        
-                const marker = new google.maps.Marker({
-                    position: e.latLng,
-                    map: map,
-                });
-        
-                previousMarker = marker; // Update the reference to the new marker
-        
-                sendLocationToServer(e.latLng.lat(), e.latLng.lng());
-                console.log(`Latitude: ${e.latLng.lat()}, Longitude: ${e.latLng.lng()}`);
-            });          
+                return response.json();
+            })
+            .then(data => {
+                // Assuming you have an infoWindow and map defined globally or accessible within this scope.
+                const content = `
+                    <div class="info-window-content">
+                        <h4>Closest Station</h4>
+                        <p>Station Name: ${data.station_name}</p>
+                        <p>Distance: ${data.distance_miles} miles</p>
+                        <p>Walk Time: ${data.walk_time}</p>
+                        <p>Run Time: ${data.run_time}</p>
+                    </div>
+                `;
+                if (window.infoWindow) {
+                    window.infoWindow.setContent(content);
+                    window.infoWindow.setPosition({lat: lat, lng: lng});
+                    window.infoWindow.open(window.map);
+                } else {
+                    console.log("Info window or map is not defined.");
+                }
+            })
+            .catch(error => console.error('Error:', error));            
+        }
+
+        function createScheduleContent(lat, lng) {
+            // Here, dynamically generate content based on the latitude and longitude
+            return (
+                '<div class="train-schedule">' +
+                '<div>10:15</div>' +
+                '<div>Paris</div>' +
+                '<div>C4</div>' +
+                '<div class="on-time">ON TIME</div>' +
+                '</div>'
+            );
+        }
+      
+        let previousMarker; // Define this outside to keep track of the previous marker
+      
+        function openInfoWindow(position, map) {  // Function to open info window
+          infowindow.setPosition(position);
+          infowindow.open(map);
         }
 
         // Adds a marker to the map.
@@ -113,37 +170,6 @@
                 map: map,
             });
         }
-
-        const scheduleContent =
-        '<div id="content">' +
-        '<div id="siteNotice">' +
-        "</div>" +
-        '<h1 id="firstHeading" class="firstHeading">Uluru</h1>' +
-        '<div id="bodyContent">' +
-        "<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large " +
-        "sandstone rock formation in the southern part of the " +
-        "Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) " +
-        "south west of the nearest large town, Alice Springs; 450&#160;km " +
-        "(280&#160;mi) by road. Kata Tjuta and Uluru are the two major " +
-        "features of the Uluru - Kata Tjuta National Park. Uluru is " +
-        "sacred to the Pitjantjatjara and Yankunytjatjara, the " +
-        "Aboriginal people of the area. It has many springs, waterholes, " +
-        "rock caves and ancient paintings. Uluru is listed as a World " +
-        "Heritage Site.</p>" +
-        '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">' +
-        "https://en.wikipedia.org/w/index.php?title=Uluru</a> " +
-        "(last visited June 22, 2009).</p>" +
-        "</div>" +
-        "</div>";
-
-        const infowindow = new google.maps.InfoWindow({
-            content: scheduleContent
-        });
-
-        map.addListener("click", (e) => {
-        infowindow.setPosition(e.latLng);
-        infowindow.open(map);
-        });
 
     </script>
 </head>
