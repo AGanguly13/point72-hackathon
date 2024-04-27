@@ -8,6 +8,59 @@
             height: 800px;
             width: 100%;
         }
+
+        .departure-board {
+            font-family: 'Courier New', monospace; /* or any monospaced font */
+            background-color: #111;
+            color: #7b7b7b;
+            padding: 5px;
+            width: 50%;
+            margin: 0 auto;
+            border-radius: 5px;
+        }
+        
+        .departure-board .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .departure-board .train-schedule {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .train-schedule div {
+            text-align: center;
+            padding: 2px 0;
+        }
+        
+        .on-time {
+            color: #4CAF50; /* Green color for on-time status */
+        }
+        
+        .delayed {
+            color: #F44336; /* Red color for delayed status */
+        }
+        
+        /* Adjust the width of the columns if necessary */
+        .departure-board .header div, .departure-board .train-schedule div {
+            width: 20%;
+        }
+        
+        /* First column for time might need less width */
+        .departure-board .header div:first-child, .departure-board .train-schedule div:first-child {
+            width: 15%;
+        }
+        
+        /* Adjust the third column for the gate as it might need less space */
+        .departure-board .header div:nth-child(3), .departure-board .train-schedule div:nth-child(3) {
+            width: 10%;
+        }
+        
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDl4s4I8sWeEkSGow0qbpLyGaLNvigBkqU&callback=initMap&libraries=&v=weekly" async></script>
     <script>
@@ -26,20 +79,31 @@
             .catch((error) => {
                 console.error('Error:', error);
             });
-        }          
-
-        function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 40.730610, lng: -73.935242 }, // Coordinates of New York
-                zoom: 12,
+        }
+        let previousMarker = null;          
+        function initMap(){
+            const nyc = { lat: 40.730610, lng: -73.935242 };
+            const map = new google.maps.Map(document.getElementById("map"), {
+              zoom: 12,
+              center: nyc,
             });
 
             // This event listener will call addMarker() when the map is clicked.
             map.addListener("click", (e) => {
-                addMarker(e.latLng, map);
+                if (previousMarker) {
+                    previousMarker.setMap(null); // Remove previous marker from map
+                }
+        
+                const marker = new google.maps.Marker({
+                    position: e.latLng,
+                    map: map,
+                });
+        
+                previousMarker = marker; // Update the reference to the new marker
+        
                 sendLocationToServer(e.latLng.lat(), e.latLng.lng());
                 console.log(`Latitude: ${e.latLng.lat()}, Longitude: ${e.latLng.lng()}`);
-            });            
+            });          
         }
 
         // Adds a marker to the map.
@@ -49,9 +113,79 @@
                 map: map,
             });
         }
+
+        const scheduleContent =
+        '<div id="content">' +
+        '<div id="siteNotice">' +
+        "</div>" +
+        '<h1 id="firstHeading" class="firstHeading">Uluru</h1>' +
+        '<div id="bodyContent">' +
+        "<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large " +
+        "sandstone rock formation in the southern part of the " +
+        "Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) " +
+        "south west of the nearest large town, Alice Springs; 450&#160;km " +
+        "(280&#160;mi) by road. Kata Tjuta and Uluru are the two major " +
+        "features of the Uluru - Kata Tjuta National Park. Uluru is " +
+        "sacred to the Pitjantjatjara and Yankunytjatjara, the " +
+        "Aboriginal people of the area. It has many springs, waterholes, " +
+        "rock caves and ancient paintings. Uluru is listed as a World " +
+        "Heritage Site.</p>" +
+        '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">' +
+        "https://en.wikipedia.org/w/index.php?title=Uluru</a> " +
+        "(last visited June 22, 2009).</p>" +
+        "</div>" +
+        "</div>";
+
+        const infowindow = new google.maps.InfoWindow({
+            content: scheduleContent
+        });
+
+        map.addListener("click", (e) => {
+        infowindow.setPosition(e.latLng);
+        infowindow.open(map);
+        });
+
     </script>
 </head>
 <body>
     <div id="map"></div>
+
+    <div class="departure-board">
+        <div class="header">
+            <div style="padding-left: 30px;">Time</div>
+            <div style="padding-left:10px;">Destination</div>
+            <div style="padding-left: 20px;">Gate</div>
+            <div style="padding-left: 60px;">Status</div>
+        </div>
+        <div class="train-schedule">
+            <div>10:15</div>
+            <div>Paris</div>
+            <div>C4</div>
+            <div class="on-time">ON TIME</div>
+        </div>
+
+        <div class="train-schedule">
+            <div>09:34</div>
+            <div>New York</div>
+            <div>C5</div>
+            <div class="delayed">DELAYED</div>
+        </div>
+
+        <div class="train-schedule">
+            <div>12:53</div>
+            <div>Chicago</div>
+            <div>C6</div>
+            <div class="delayed">DELAYED</div>
+        </div>
+
+        <div class="train-schedule">
+            <div>05:26</div>
+            <div>Atlanta</div>
+            <div>C5</div>
+            <div class="on-time">ON TIME</div>
+        </div>
+        <!-- Repeat the above div for each row of your train schedule -->
+    </div>
+
 </body>
 </html>
