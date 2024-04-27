@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Map</title>
+    <style>
+        /* Set the size of the div element that contains the map */
+        #map {
+            height: 800px;
+            width: 100%;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDl4s4I8sWeEkSGow0qbpLyGaLNvigBkqU&callback=initMap&libraries=&v=weekly" async></script>
+    <script>
+        let map;
+
+        function sendLocationToServer(lat, lng) {
+            fetch('http://localhost:5000/receive_location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({lat: lat, lng: lng})
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }          
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 40.730610, lng: -73.935242 }, // Coordinates of New York
+                zoom: 12,
+            });
+
+            // This event listener will call addMarker() when the map is clicked.
+            map.addListener("click", (e) => {
+                addMarker(e.latLng, map);
+                sendLocationToServer(e.latLng.lat(), e.latLng.lng());
+                console.log(`Latitude: ${e.latLng.lat()}, Longitude: ${e.latLng.lng()}`);
+            });            
+        }
+
+        // Adds a marker to the map.
+        function addMarker(location, map) {
+            new google.maps.Marker({
+                position: location,
+                map: map,
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="map"></div>
+</body>
+</html>
