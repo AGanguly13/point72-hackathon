@@ -18,7 +18,5 @@ Our general flow structure is as follows.
 3. We compute the distance to the closest train stop based on the longitude and latitude points of where the user clicked
 4. We then send the relevant data back to the frontend, including data for upcoming train departures at that station using the MTA Subway Realtime Feeds API
 
-## Reflections and further work
-
 
 
