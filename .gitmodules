@@ -1,0 +1,3 @@
+[submodule "csp_mta"]
+	path = csp_mta
+	url = https://github.com/csp-community/csp-mta.git
