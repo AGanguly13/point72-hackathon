@@ -13,14 +13,14 @@
       top: 0;
       left: 0;
       right: 0;
-      background-color: #E7E4E0;
-      color: #000000;
+      background-color: #424D5C;
+      color: #FFFFFF;
       padding: 20px;
       text-align: center;
       display: none;
       z-index: 1000;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-      border-bottom: 2px solid #E7E4E0;
+      border-bottom: 2px solid #424D5C;
       font-size: 16px;
       font-family: 'Roboto', sans-serif; /* Specify Roboto font */
     }
@@ -59,14 +59,14 @@
     });
 
     function generateHTMLTable(data) {
-        let tableHTML = '<table style="width: 100%; border-collapse: collapse; border: 2px solid black;">\n';
-        tableHTML += '<tr style="background-color: #f2f2f2;"><th style="padding: 10px; border: 1px solid black;">Route</th><th style="padding: 10px; border: 1px solid black;">Uptown / Manhattan</th><th style="padding: 10px; border: 1px solid black;">Downtown / Brooklyn</th></tr>\n';
+        let tableHTML = '<table style="width: 100%; border-radius: 10px; border-collapse: collapse; border: 2px solid #FFFFFF; background-color: #424D5C; color: #FFFFFF;">\n';
+        tableHTML += '<tr style="background-color: #424D5C; border-radius: 10px;"><th style="padding: 10px; border: 1px solid #FFFFFF;">Route</th><th style="padding: 10px; border: 1px solid #FFFFFF;">Uptown / Manhattan</th><th style="padding: 10px; border: 1px solid #FFFFFF;">Downtown / Brooklyn</th></tr>\n';
 
         for (const route in data[0].closestTimes) {
           const times = data[0].closestTimes[route];
-          const timesHTML = times.map(time => `<td style="padding: 10px; border: 1px solid black;">${time}</td>`).join('');
+          const timesHTML = times.map(time => `<td style="padding: 10px; border: 1px solid #FFFFFF;">${time}</td>`).join('');
 
-          tableHTML += `<tr><td style="padding: 10px; border: 1px solid black;">${route}</td>${timesHTML}</tr>\n`;
+          tableHTML += `<tr><td style="padding: 10px; border: 1px solid #FFFFFF;">${route}</td>${timesHTML}</tr>\n`;
         }
 
         tableHTML += '</table>';
@@ -78,7 +78,7 @@
     function initMap() {
       map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/navigation-night-v1',
         center: [-73.935242, 40.730610], // Coordinates of New York in Mapbox format (lng, lat)
         zoom: 12,
       });
